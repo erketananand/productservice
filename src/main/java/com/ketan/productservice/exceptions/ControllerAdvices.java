@@ -15,5 +15,4 @@ public class ControllerAdvices {
                 new ExceptionDto(HttpStatus.NOT_FOUND, ex.getMessage()),
                 HttpStatus.NOT_FOUND);
     }
-
 }
