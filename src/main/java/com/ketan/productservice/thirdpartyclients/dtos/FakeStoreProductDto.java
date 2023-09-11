@@ -1,4 +1,4 @@
-package com.ketan.productservice.dtos;
+package com.ketan.productservice.thirdpartyclients.dtos;
 
 import lombok.Getter;
 import lombok.Setter;

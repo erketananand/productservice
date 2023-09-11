@@ -9,10 +9,13 @@ import com.ketan.productservice.dtos.ExceptionDto;
 
 @ControllerAdvice
 public class ControllerAdvices {
-    @ExceptionHandler(NotFoundException.class)
-    private ResponseEntity<ExceptionDto> handleNotFoundException(NotFoundException ex) {
-        return new ResponseEntity<>(
-                new ExceptionDto(HttpStatus.NOT_FOUND, ex.getMessage()),
-                HttpStatus.NOT_FOUND);
-    }
+    /*
+     * @ExceptionHandler(NotFoundException.class)
+     * private ResponseEntity<ExceptionDto>
+     * handleNotFoundException(NotFoundException ex) {
+     * return new ResponseEntity<>(
+     * new ExceptionDto(HttpStatus.NOT_FOUND, ex.getMessage()),
+     * HttpStatus.NOT_FOUND);
+     * }
+     */
 }
