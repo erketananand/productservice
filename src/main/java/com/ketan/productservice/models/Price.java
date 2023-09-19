@@ -3,16 +3,13 @@ package com.ketan.productservice.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@Entity
 @Getter
 @Setter
+@Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Category extends BaseModel {
-    @Column
-    private String name;
+public class Price extends BaseModel {
+    String currency;
+    double price;
 }
