@@ -79,4 +79,9 @@ public class FakeStoreProductService implements ProductService {
         return this.convertFakeStoreProductDtoToGenericProductDto(fakeStoreProductDto);
     }
 
+    @Override
+    public List<GenericProductDto> getAllProductsByCategoryId(Long categoryId) {
+        return null;
+    }
+
 }

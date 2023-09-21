@@ -9,6 +9,7 @@ import com.ketan.productservice.models.Category;
 import com.ketan.productservice.models.Price;
 import com.ketan.productservice.models.Product;
 //import org.springframework.context.annotation.Primary;
+import com.ketan.productservice.repositories.CategoryRepository;
 import com.ketan.productservice.repositories.PriceRepository;
 import com.ketan.productservice.repositories.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -21,37 +22,71 @@ import java.util.Optional;
 //@Primary
 @Transactional
 @Service("internalProductService")
-public class InternalProductService implements ProductService {
+public class ProductServiceImpl implements ProductService {
 
     private ProductRepository productRepository;
     private PriceRepository priceRepository;
 
-    public InternalProductService(ProductRepository productRepository, PriceRepository priceRepository) {
+    private CategoryRepository categoryRepository;
+
+    public ProductServiceImpl(ProductRepository productRepository, PriceRepository priceRepository,
+                              CategoryRepository categoryRepository) {
         this.productRepository = productRepository;
         this.priceRepository = priceRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     private Product convertProductDtoToProductEntity(GenericProductDto productDto) {
-        return Product.builder()
+        Product product = Product.builder()
                 .title(productDto.getTitle())
                 .description(productDto.getDescription())
                 .price(convertPriceDtoToPriceEntity(productDto.getPrice()))
                 .category(convertGenericCategoryDtoToCategoryEntity(productDto.getCategory()))
                 .image(productDto.getImage())
                 .build();
+        if(productDto.getId() != null) {
+            product.setId(productDto.getId());
+        }
+        if(productDto.getPrice().getId() != null) {
+            Optional<Price> price = priceRepository.findById(productDto.getPrice().getId());
+            price.ifPresent(product::setPrice);
+        }
+        if(productDto.getCategory().getId() != null) {
+            Optional<Category> category = categoryRepository.findById(productDto.getCategory().getId());
+            category.ifPresent(product::setCategory);
+        }
+        return product;
     }
 
     private Price convertPriceDtoToPriceEntity(GenericPriceDto priceDto) {
-        return Price.builder()
+        Price price = Price.builder()
                 .price(priceDto.getPrice())
                 .currency(priceDto.getCurrency())
                 .build();
+        if(priceDto.getId() != null) {
+            price.setId(priceDto.getId());
+        }
+        return price;
     }
 
     private Category convertGenericCategoryDtoToCategoryEntity(GenericCategoryDto categoryDto) {
-        return Category.builder()
+        Category category = Category.builder()
                 .name(categoryDto.getName())
                 .build();
+        if(categoryDto.getId() != null) {
+            category.setId(categoryDto.getId());
+        }
+        return category;
+    }
+    private Price updatePriceEntityFromPriceDto(GenericPriceDto priceDto, Price price) {
+        price.setPrice(priceDto.getPrice());
+        price.setCurrency(priceDto.getCurrency());
+        return price;
+    }
+
+    private Category updateCategoryEntityFromGenericCategoryDto(GenericCategoryDto categoryDto, Category category) {
+        category.setName(categoryDto.getName());
+        return category;
     }
 
 
@@ -108,7 +143,7 @@ public class InternalProductService implements ProductService {
 
     @Override
     public List<GenericProductDto> getAllProducts() {
-        List<Product> products = productRepository.findAll();
+        List<Product> products = productRepository.findAllWithJoins();
         return convertProductEntityListToProductDtoList(products);
     }
 
@@ -119,8 +154,8 @@ public class InternalProductService implements ProductService {
             Product productEntity = product.get();
             productEntity.setTitle(productDto.getTitle());
             productEntity.setDescription(productDto.getDescription());
-            productEntity.setPrice(convertPriceDtoToPriceEntity(productDto.getPrice()));
-            productEntity.setCategory(convertGenericCategoryDtoToCategoryEntity(productDto.getCategory()));
+            productEntity.setPrice(updatePriceEntityFromPriceDto(productDto.getPrice(), productEntity.getPrice()));
+            productEntity.setCategory(updateCategoryEntityFromGenericCategoryDto(productDto.getCategory(), productEntity.getCategory()));
             productEntity.setImage(productDto.getImage());
             Product savedProduct = productRepository.save(productEntity);
             return convertProductEntityToGenericProductDto(savedProduct);
@@ -138,5 +173,11 @@ public class InternalProductService implements ProductService {
         } else {
             throw new NotFoundException("Product not found with id: " + id);
         }
+    }
+
+    @Override
+    public List<GenericProductDto> getAllProductsByCategoryId(Long categoryId) {
+        List<Product> products = productRepository.findAllByCategoryId(categoryId);
+        return convertProductEntityListToProductDtoList(products);
     }
 }
